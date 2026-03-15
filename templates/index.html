@@ -1,20 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Research Agent</title>
+
+<title>AI Research Agent</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f5f5f5;
+padding:40px;
+}
+
+.container{
+background:white;
+padding:30px;
+border-radius:10px;
+max-width:800px;
+margin:auto;
+}
+
+input{
+width:70%;
+padding:10px;
+font-size:16px;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+background:#007bff;
+color:white;
+border:none;
+border-radius:5px;
+}
+
+</style>
+
 </head>
 
 <body>
 
+<div class="container">
+
 <h1>AI Research Agent</h1>
 
-<form method="POST">
-    <input type="text" name="topic" placeholder="Enter research topic">
-    <button type="submit">Generate Report</button>
+<form method="POST" onsubmit="showLoader()">
+
+<input name="topic" placeholder="Enter research topic">
+
+<button type="submit">Generate Report</button>
+
 </form>
 
-<h2>Generated Report</h2>
-<p>{{ report }}</p>
+<div id="loading" style="display:none;">
+<p>Researching topic… please wait.</p>
+</div>
+
+</div>
+
+<script>
+function showLoader() {
+    document.getElementById("loading").style.display = "block";
+}
+</script>
 
 </body>
 </html>

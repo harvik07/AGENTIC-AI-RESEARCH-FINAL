@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Research History</title>
+</head>
+
+<body>
+
+<h1>AI Research History</h1>
+
+<ul>
+
+{% for report in reports %}
+
+<li>
+<a href="/reports/{{report}}">{{report}}</a>
+</li>
+
+{% endfor %}
+
+</ul>
+
+<br>
+
+<a href="/">Back to Home</a>
+
+</body>
+
+</html>
