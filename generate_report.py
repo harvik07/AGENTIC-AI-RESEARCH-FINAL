@@ -1,40 +1,91 @@
+
 from google import genai
 from dotenv import load_dotenv
 import os
+import time
+import requests
 
 load_dotenv()
 
-# Initialize Gemini client
+# ==============================
+# GEMINI CLIENT
+# ==============================
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 
+# ==============================
+# OLLAMA FUNCTION (LOCAL AI)
+# ==============================
+def run_ollama(prompt):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "phi",
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        return response.json()["response"]
+
+    except Exception as e:
+        print("Ollama error:", e)
+        return "⚠️ Report generation failed (Ollama error)."
+
+
+# ==============================
+# RETRY + FALLBACK FUNCTION
+# ==============================
+def generate_with_retry(prompt, retries=3):
+
+    # 🔹 Try Gemini first
+    for attempt in range(retries):
+        try:
+            print("🟢 Using Gemini for report")
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config={"temperature": 0.3}
+            )
+            return response.text
+
+        except Exception:
+            print(f"Retry {attempt+1}... Gemini busy")
+            time.sleep(2)
+
+    # 🔥 FALLBACK → OLLAMA
+    print("🔵 Switching to Ollama for report")
+
+    return run_ollama(prompt)
+
+
+# ==============================
+# MAIN REPORT FUNCTION
+# ==============================
 def generate_report(topic, research_data):
-    """
-    Generate a structured research report from collected research data.
-    """
 
-    # Limit chunks so the model doesn't get overloaded
-    research_data = research_data[:12]
+    try:
+        # Limit data (avoid overload)
+        research_data = research_data[:12]
 
-    combined_text = ""
-    sources = {}
-    source_list = []
+        combined_text = ""
+        sources = {}
+        source_list = []
 
-    for item in research_data:
+        for item in research_data:
 
-        source = item["source"]
-        content = item["content"]
+            source = item["source"]
+            content = item["content"]
 
-        # Assign numbered citations
-        if source not in sources:
-            sources[source] = len(sources) + 1
-            source_list.append(source)
+            if source not in sources:
+                sources[source] = len(sources) + 1
+                source_list.append(source)
 
-        source_id = sources[source]
+            source_id = sources[source]
 
-        combined_text += f"\n[Source {source_id}: {source}]\n{content}\n"
+            combined_text += f"\n[Source {source_id}: {source}]\n{content}\n"
 
-    prompt = f"""
+        prompt = f"""
 You are a professional research analyst.
 
 Write a detailed, well-structured research report using ONLY the research data provided.
@@ -65,12 +116,9 @@ Write the report with the following structure:
 In the Sources section list all sources with their citation numbers.
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config={
-            "temperature": 0.3
-        }
-    )
+        return generate_with_retry(prompt)
 
-    return response.text
+    except Exception as e:
+        print("🔥 Report Error:", e)
+        return "⚠️ Report generation failed."
+

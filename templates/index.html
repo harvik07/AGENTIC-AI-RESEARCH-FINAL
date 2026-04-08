@@ -1,61 +1,126 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>AI Research Agent</title>
 
-<title>AI Research Agent</title>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-<style>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
 
-body{
-font-family: Arial;
-background:#f5f5f5;
-padding:40px;
-}
+        /* Main card */
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 700px;
+            margin: 80px auto;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease-in;
+        }
 
-.container{
-background:white;
-padding:30px;
-border-radius:10px;
-max-width:800px;
-margin:auto;
-}
+        /* Heading */
+        h1 {
+            margin-bottom: 10px;
+        }
 
-input{
-width:70%;
-padding:10px;
-font-size:16px;
-}
+        .subtitle {
+            color: gray;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-button{
-padding:10px 20px;
-font-size:16px;
-background:#007bff;
-color:white;
-border:none;
-border-radius:5px;
-}
+        /* Input */
+        input {
+            width: 80%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
 
-</style>
+        input:focus {
+            border-color: #4facfe;
+        }
 
+        /* Button */
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 16px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #00c6ff;
+            transform: scale(1.05);
+        }
+
+        /* Loader */
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            margin: 10px auto;
+            border: 4px solid #eee;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>AI Research Agent</h1>
+    <h1>🤖 AI Research Agent</h1>
+    <p class="subtitle">Enter any topic and generate a detailed research report instantly</p>
 
-<form method="POST" onsubmit="showLoader()">
+    <form method="POST" onsubmit="showLoader()">
+        <input name="topic" placeholder="Enter research topic..." required>
+        <br>
+        <button type="submit">Generate Report</button>
+    </form>
 
-<input name="topic" placeholder="Enter research topic">
-
-<button type="submit">Generate Report</button>
-
-</form>
-
-<div id="loading" style="display:none;">
-<p>Researching topic… please wait.</p>
-</div>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Researching topic… please wait.</p>
+    </div>
 
 </div>
 

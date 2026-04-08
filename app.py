@@ -16,31 +16,47 @@ os.makedirs("reports", exist_ok=True)
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-\
-
 
     if request.method == "POST":
 
-        topic = request.form["topic"]
+        topic = request.form.get("topic")
+
+        if not topic or topic.strip() == "":
+            return "<h3>⚠️ Please enter a valid topic.</h3>"
 
         print("\nStarting research on:", topic)
 
-        # run research pipeline
-        research_data = run_research(topic)
+        try:
+            # -----------------------------
+            # RUN RESEARCH SAFELY
+            # -----------------------------
+            research_data = run_research(topic)
 
-        # generate report
-        report = generate_report(topic, research_data)
+            if "⚠️" in research_data:
+                return f"<h3>{research_data}</h3>"
 
-        # create safe filename
-        filename = topic.replace(" ", "_").lower() + ".txt"
+            # -----------------------------
+            # GENERATE REPORT SAFELY
+            # -----------------------------
+            report = generate_report(topic, research_data)
 
-        filepath = os.path.join("reports", filename)
+            if "⚠️" in report:
+                return f"<h3>{report}</h3>"
 
-        # save report
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(report)
+            # -----------------------------
+            # SAVE REPORT
+            # -----------------------------
+            filename = topic.replace(" ", "_").lower() + ".txt"
+            filepath = os.path.join("reports", filename)
 
-        return f"<pre>{report}</pre>"
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(report)
+
+            return f"<pre>{report}</pre>"
+
+        except Exception as e:
+            print("🔥 ERROR:", e)
+            return "<h3>⚠️ Server is busy. Please try again.</h3>"
 
     return render_template("index.html")
 
@@ -51,7 +67,10 @@ def home():
 @app.route("/history")
 def history():
 
-    reports = os.listdir("reports")
+    try:
+        reports = os.listdir("reports")
+    except:
+        reports = []
 
     return render_template("history.html", reports=reports)
 
@@ -62,12 +81,16 @@ def history():
 @app.route("/reports/<filename>")
 def get_report(filename):
 
-    filepath = os.path.join("reports", filename)
+    try:
+        filepath = os.path.join("reports", filename)
 
-    with open(filepath, "r", encoding="utf-8") as f:
-        content = f.read()
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
 
-    return f"<pre>{content}</pre>"
+        return f"<pre>{content}</pre>"
+
+    except:
+        return "<h3>⚠️ Report not found.</h3>"
 
 
 if __name__ == "__main__":
