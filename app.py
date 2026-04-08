@@ -16,6 +16,8 @@ os.makedirs("reports", exist_ok=True)
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+\
+
 
     if request.method == "POST":
 
