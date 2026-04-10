@@ -56,6 +56,8 @@ User Input
    ↓
 Flask App
    ↓
+🧠 Memory Retrieval (NEW)
+   ↓
 Planner Agent (Gemini → Ollama fallback)
    ↓
 Research Engine
@@ -65,9 +67,34 @@ Research Engine
    ↓
 Report Generator (Gemini → Ollama fallback)
    ↓
+💾 Store in Memory (NEW)
+   ↓
 Final Research Report
 ```
+🧠 Persistent Memory System (NEW 🔥)
 
+👉 The system now includes a local AI memory layer using ChromaDB
+
+What it does:
+Stores past queries and generated research reports
+Retrieves relevant past knowledge for new queries
+Improves report quality over time
+Reduces repeated web scraping
+How it works:
+Uses ChromaDB Persistent Database
+Stores:
+User queries
+Extracted research content
+Generated summaries
+Performs semantic search on previous data
+Example:
+Query 1: AI in healthcare
+→ Research stored in memory
+```text 
+Query 2: AI in hospitals
+→ System retrieves related past research
+→ Generates improved report
+```
 ---
 
 ## 🛠️ Tech Stack
@@ -87,7 +114,8 @@ Final Research Report
 
   * newspaper3k
   * BeautifulSoup
-
+* **Memory System**:
+  *ChromaDB (Persistent Vector Database)
 * **Libraries:**
 
   * requests
@@ -160,12 +188,15 @@ http://127.0.0.1:5000
 
 ## 🧪 How It Works
 
-1. User enters a research topic
-2. Planner agent breaks it into tasks
-3. Tavily searches for relevant sources
-4. Reader agent scrapes and extracts content
-5. AI generates a structured report
-6. If API fails → system switches to Ollama
+🧪 How It Works
+User enters a research topic
+🧠 System checks memory for past research
+Planner agent breaks it into tasks
+Tavily searches for relevant sources
+Reader agent scrapes and extracts content
+AI generates a structured report
+💾 Report is stored in memory
+Future queries reuse past knowledge
 
 ---
 
@@ -202,6 +233,7 @@ AGENTIC-AI-RESEARCH/
 │
 ├── research_engine.py
 ├── generate_report.py
+├── memory_db.py        
 ├── app.py
 │
 ├── templates/
@@ -209,6 +241,7 @@ AGENTIC-AI-RESEARCH/
 │   ├── history.html
 │
 ├── reports/
+├── memory/            
 ├── .env
 ├── requirements.txt
 ```
