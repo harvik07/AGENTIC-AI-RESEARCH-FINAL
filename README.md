@@ -15,9 +15,69 @@ A multi-agent AI research system that automatically generates structured researc
 
 ---
 
-## 🧠 Persistent Memory System 
+## 🤖 Tool-Based Agent System (NEW 🔥)
 
-👉 The system includes a **local AI memory layer using ChromaDB**
+👉 The system now uses **multiple intelligent tools** to gather different types of information instead of relying on a single source.
+
+### Tools Used:
+
+* 📚 **Wikipedia** → Basic understanding
+* 📄 **Arxiv** → Research papers & academic insights
+* 🌐 **Tavily Web Search** → Latest real-world information
+
+### How it works:
+
+* System automatically gathers:
+
+  * Fundamental concepts from Wikipedia
+  * Deep research from Arxiv
+  * Current data from web search
+* Combines all sources into one structured report
+
+### Example:
+
+```
+Query: AI in healthcare
+
+→ Wikipedia: basic explanation  
+→ Arxiv: research papers  
+→ Tavily: latest industry data  
+→ Combined into final report
+```
+
+### Key Benefits:
+
+* 📚 Better understanding (basic + advanced)
+* 🔬 More accurate research
+* 🌍 Real-world + academic coverage
+* 🤖 True agent-like behavior
+
+---
+
+## 🔍 Source Transparency System (NEW 🚀)
+
+👉 The system clearly shows **which source is being used**
+
+### Example Output:
+
+```
+📚 Using Wikipedia...
+📄 Using Arxiv...
+🌐 Using Tavily Web Search...
+```
+
+### Each result includes:
+
+* Source type (Wiki / Research Paper / Web)
+* Source link or origin
+
+💥 Makes system more transparent and professional
+
+---
+
+## 🧠 Persistent Memory System
+
+👉 The system includes a local AI memory layer using ChromaDB
 
 ### What it does:
 
@@ -30,7 +90,7 @@ A multi-agent AI research system that automatically generates structured researc
 
 ## 🧠 RAG System (Retrieval-Augmented Generation) (NEW 🚀)
 
-👉 The system now uses **chunk-based memory retrieval (RAG)** for more accurate and efficient responses.
+👉 The system now uses chunk-based memory retrieval (RAG) for more accurate and efficient responses.
 
 ### What it does:
 
@@ -41,13 +101,13 @@ A multi-agent AI research system that automatically generates structured researc
 
 ### How it works:
 
-1. Generated reports are split into smaller chunks
-2. Each chunk is stored in ChromaDB
-3. When a new query is received:
+* Generated reports are split into smaller chunks
+* Each chunk is stored in ChromaDB
+* When a new query is received:
 
-   * System searches for relevant chunks
-   * Only top relevant chunks are retrieved
-4. These chunks are used along with new research to generate the final report
+  * System searches for relevant chunks
+  * Only top relevant chunks are retrieved
+* These chunks are used along with new research
 
 ### Example:
 
@@ -57,7 +117,7 @@ Query 1: AI in healthcare
 
 Query 2: AI diagnosis tools
 → Only diagnosis-related chunks retrieved
-→ More accurate and focused report generated
+→ More accurate report
 ```
 
 ### Key Benefits:
@@ -122,16 +182,17 @@ User Input
    ↓
 Flask App
    ↓
-🧠 RAG Memory Retrieval (NEW)
+🧠 RAG Memory Retrieval
    ↓
-Planner Agent (Gemini → Ollama fallback)
+📚 Wikipedia Tool
+📄 Arxiv Tool
+🌐 Tavily Web Search
+   ↓
+Planner Agent
    ↓
 Research Engine
-   ├── Query Generation
-   ├── Tavily Web Search
-   ├── Reader Agent (Web Scraping)
    ↓
-Report Generator (Gemini → Ollama fallback)
+Report Generator
    ↓
 💾 Store as Chunks (RAG)
    ↓
@@ -169,6 +230,11 @@ Final Research Report
 * Chunk-based storage & retrieval
 * Context-aware memory usage
 
+### Tools System (NEW):
+
+* Wikipedia API
+* Arxiv API
+
 ### Libraries:
 
 * requests
@@ -191,15 +257,11 @@ git clone https://github.com/harvik07/AGENTIC-AI-RESEARCH-FINAL.git
 cd AGENTIC-AI-RESEARCH-FINAL
 ```
 
----
-
 ## 2️⃣ Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
-
----
 
 ## 3️⃣ Add API Keys
 
@@ -210,19 +272,15 @@ GEMINI_API_KEY=your_gemini_key
 TAVILY_API_KEY=your_tavily_key
 ```
 
----
-
 ## 4️⃣ Install Ollama
 
 Download: 👉 [https://ollama.com](https://ollama.com)
 
-Run model:
+Run:
 
 ```bash
 ollama run phi
 ```
-
----
 
 ## 5️⃣ Run the application
 
@@ -242,38 +300,33 @@ http://127.0.0.1:5000
 
 1. User enters a research topic
 2. 🧠 System retrieves relevant chunks using RAG
-3. Planner agent creates research tasks
-4. Tavily fetches relevant sources
-5. Reader agent extracts content
-6. AI generates structured report
-7. 💾 Report is split into chunks and stored
-8. Future queries reuse only relevant knowledge
-
----
-
-# 🔍 Web Search & Scraping
-
-* Tavily API → retrieves relevant URLs
-* newspaper3k → extracts clean content
-* BeautifulSoup → fallback scraping
+3. 📚 Wikipedia provides base knowledge
+4. 📄 Arxiv provides research papers
+5. 🌐 Tavily fetches latest web data
+6. Planner agent creates research tasks
+7. Reader agent extracts content
+8. AI generates structured report
+9. 💾 Report stored as memory chunks
 
 ---
 
 # 🔥 Key Innovation
 
-This project implements a **Hybrid + RAG-based Agentic AI System**:
+This project implements a **Hybrid + RAG + Tool-Based Agentic AI System**:
 
 * Cloud AI for speed ⚡
 * Local AI for reliability 💻
 * Persistent Memory 🧠
 * RAG (chunk-based retrieval) 🎯
-* Automatic failover system 🔄
+* Multi-tool intelligence 🤖
+* Automatic failover 🔄
 
 👉 Ensures:
 
 * Zero failure during API downtime
 * Accurate, context-aware responses
-* Continuous learning from past data
+* Multi-source intelligence
+* Continuous learning
 
 ---
 
@@ -287,6 +340,8 @@ AGENTIC-AI-RESEARCH/
 │   ├── search_agent.py
 │   ├── reader_agent.py
 │   ├── query_agent.py
+│   ├── wiki_tool.py        # NEW
+│   ├── arxiv_tool.py       # NEW
 │
 ├── research_engine.py
 ├── generate_report.py
@@ -311,7 +366,8 @@ AGENTIC-AI-RESEARCH/
 * Ollama must be installed
 * Some websites may block scraping
 * Memory is stored locally in `/memory`
-* RAG improves accuracy but depends on stored data quality
+* Arxiv may not return results for non-technical topics
+* System uses Tavily as fallback
 
 ---
 
@@ -337,4 +393,4 @@ BTech Data Science
 
 If you like this project, give it a ⭐ on GitHub!
 
-
+---
