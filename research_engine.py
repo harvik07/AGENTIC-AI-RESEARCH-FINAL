@@ -3,11 +3,14 @@ from agents.search_agent import search_web
 from agents.reader_agent import read_page
 from agents.query_agent import generate_queries
 
-from memory_db import search_memory  # 🧠 RAG Memory
+from memory_db import search_memory
 
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 import time
+
+from agents.wiki_tool import search_wikipedia
+from agents.arxiv_tool import search_arxiv
 
 
 # -----------------------------
@@ -28,14 +31,14 @@ def is_valid_source(url):
 
     for blocked in blocked_domains:
         if blocked in domain:
-            print("Blocked source:", url)
+            print("🚫 Blocked source:", url)
             return False
 
     return True
 
 
 # -----------------------------
-# PROCESS SINGLE TASK
+# PROCESS SINGLE TASK (TAVILY)
 # -----------------------------
 def process_task(task):
 
@@ -45,30 +48,28 @@ def process_task(task):
         if not task.strip():
             return []
 
-        print("\nProcessing task:", task)
+        print("\n🌐 Using Tavily Web Search...")
+        print("Processing task:", task)
 
         queries = generate_queries(task)
         urls = []
 
         for q in queries:
-            print("Searching for:", q)
+            print("🔎 Searching for:", q)
 
             try:
                 results = search_web(q)
                 urls.extend(results)
-                time.sleep(1)  # avoid rate limit
+                time.sleep(1)
 
             except Exception as e:
                 print("Search failed:", e)
 
-        # remove duplicates
         urls = list(set(urls))
-
-        # filter bad domains
         urls = [u for u in urls if is_valid_source(u)]
 
         for url in urls:
-            print("Reading:", url)
+            print("📖 Reading:", url)
 
             try:
                 text = read_page(url)
@@ -76,6 +77,7 @@ def process_task(task):
                 if text and len(text) > 200:
                     research_data.append({
                         "source": url,
+                        "type": "Web",
                         "content": text[:4000]
                     })
 
@@ -90,28 +92,66 @@ def process_task(task):
 
 
 # -----------------------------
-# MAIN RESEARCH PIPELINE (RAG ENABLED)
+# MAIN RESEARCH PIPELINE
 # -----------------------------
 def run_research(topic):
 
     try:
-        print("\nStarting research on:", topic)
+        print("\n🚀 Starting research on:", topic)
 
         # -----------------------------
-        # 🧠 RAG MEMORY RETRIEVAL
+        # 🧠 MEMORY
         # -----------------------------
         memory_context = search_memory(topic)
 
-        if memory_context:
-            print("\n🧠 Using relevant memory chunks...\n")
-
-        print("\nCreating research plan...\n")
+        if isinstance(memory_context, list) and memory_context:
+            memory_context = "\n".join(memory_context[0])
+            print("\n🧠 Using previous memory...\n")
+        else:
+            memory_context = ""
 
         # -----------------------------
-        # ENHANCED TOPIC WITH MEMORY
+        # 📚 WIKIPEDIA TOOL
         # -----------------------------
+        print("\n📚 Using Wikipedia...")
+        wiki_data = search_wikipedia(topic)
+
+        wiki_result = []
+        if wiki_data:
+            print("✅ Wikipedia data added")
+            wiki_result.append({
+                "source": "Wikipedia",
+                "type": "Wiki",
+                "content": wiki_data[:2000]
+            })
+        else:
+            print("⚠️ Wikipedia not found")
+
+        # -----------------------------
+        # 📄 ARXIV TOOL
+        # -----------------------------
+        print("\n📄 Using Arxiv...")
+        arxiv_data = search_arxiv(topic)
+
+        arxiv_result = []
+        if arxiv_data:
+            print("✅ Arxiv data added")
+            for paper in arxiv_data:
+                arxiv_result.append({
+                    "source": "Arxiv",
+                    "type": "Research Paper",
+                    "content": paper[:2000]
+                })
+        else:
+            print("⚠️ No Arxiv papers found")
+
+        # -----------------------------
+        # CREATE PLAN
+        # -----------------------------
+        print("\n🧠 Creating research plan...\n")
+
         enhanced_topic = f"""
-Previous relevant knowledge:
+Previous knowledge:
 {memory_context}
 
 Current topic:
@@ -126,7 +166,6 @@ Current topic:
         print("📌 Plan generated using:", source)
         print(plan)
 
-        # ❗ HANDLE FAILURE
         if not plan or "⚠️" in plan:
             return {
                 "research": [],
@@ -134,7 +173,6 @@ Current topic:
                 "error": "⚠️ Failed to generate research plan."
             }
 
-        # clean tasks
         tasks = [t.strip() for t in plan.split("\n") if t.strip()]
 
         if not tasks:
@@ -144,10 +182,17 @@ Current topic:
                 "error": "⚠️ No valid research tasks generated."
             }
 
+        # -----------------------------
+        # COMBINE ALL DATA
+        # -----------------------------
         all_research = []
 
+        # Add tools first
+        all_research.extend(wiki_result)
+        all_research.extend(arxiv_result)
+
         # -----------------------------
-        # PARALLEL PROCESSING
+        # PARALLEL WEB SEARCH
         # -----------------------------
         with ThreadPoolExecutor(max_workers=3) as executor:
             results = list(executor.map(process_task, tasks))
@@ -155,7 +200,6 @@ Current topic:
         for r in results:
             all_research.extend(r)
 
-        # ❗ HANDLE EMPTY OUTPUT
         if not all_research:
             return {
                 "research": [],
