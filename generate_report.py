@@ -1,9 +1,9 @@
-
 from google import genai
 from dotenv import load_dotenv
 import os
 import time
 import requests
+from memory_db import store_memory
 
 load_dotenv()
 
@@ -55,17 +55,18 @@ def generate_with_retry(prompt, retries=3):
 
     # 🔥 FALLBACK → OLLAMA
     print("🔵 Switching to Ollama for report")
-
     return run_ollama(prompt)
 
 
 # ==============================
-# MAIN REPORT FUNCTION
+# MAIN REPORT FUNCTION (UPDATED)
 # ==============================
-def generate_report(topic, research_data):
+def generate_report(topic, research_data, memory_context):
 
     try:
-        # Limit data (avoid overload)
+        # -----------------------------
+        # LIMIT DATA (avoid overload)
+        # -----------------------------
         research_data = research_data[:12]
 
         combined_text = ""
@@ -85,23 +86,30 @@ def generate_report(topic, research_data):
 
             combined_text += f"\n[Source {source_id}: {source}]\n{content}\n"
 
+        # -----------------------------
+        # PROMPT (RAG ENABLED)
+        # -----------------------------
         prompt = f"""
 You are a professional research analyst.
 
-Write a detailed, well-structured research report using ONLY the research data provided.
+Use BOTH:
+1. Relevant previous knowledge (memory)
+2. New research data
 
 Important Rules:
 - Do NOT invent information.
-- Use only the provided research data.
-- If the research data is insufficient, clearly state that.
+- Prefer NEW research data.
+- Use memory only when relevant.
 - Cite sources using numbers like [1], [2], [3].
-- Every important statistic or claim must include a citation.
-- If multiple sources provide different statistics, explain the difference instead of choosing only one.
+- Every important claim must include a citation.
 
 Topic:
 {topic}
 
-Research Data:
+Relevant Previous Knowledge:
+{memory_context}
+
+New Research Data:
 {combined_text}
 
 Write the report with the following structure:
@@ -116,9 +124,18 @@ Write the report with the following structure:
 In the Sources section list all sources with their citation numbers.
 """
 
-        return generate_with_retry(prompt)
+        # -----------------------------
+        # GENERATE REPORT
+        # -----------------------------
+        final_report = generate_with_retry(prompt)
+
+        # -----------------------------
+        # STORE IN MEMORY (RAG)
+        # -----------------------------
+        store_memory(topic, final_report)
+
+        return final_report
 
     except Exception as e:
         print("🔥 Report Error:", e)
         return "⚠️ Report generation failed."
-

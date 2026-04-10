@@ -1,8 +1,9 @@
-
 from agents.planner_agent import create_plan
 from agents.search_agent import search_web
 from agents.reader_agent import read_page
 from agents.query_agent import generate_queries
+
+from memory_db import search_memory  # 🧠 RAG Memory
 
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
@@ -89,17 +90,35 @@ def process_task(task):
 
 
 # -----------------------------
-# MAIN RESEARCH PIPELINE
+# MAIN RESEARCH PIPELINE (RAG ENABLED)
 # -----------------------------
 def run_research(topic):
 
     try:
         print("\nStarting research on:", topic)
 
+        # -----------------------------
+        # 🧠 RAG MEMORY RETRIEVAL
+        # -----------------------------
+        memory_context = search_memory(topic)
+
+        if memory_context:
+            print("\n🧠 Using relevant memory chunks...\n")
+
         print("\nCreating research plan...\n")
 
-        # 🔥 UPDATED PART (IMPORTANT)
-        result = create_plan(topic)
+        # -----------------------------
+        # ENHANCED TOPIC WITH MEMORY
+        # -----------------------------
+        enhanced_topic = f"""
+Previous relevant knowledge:
+{memory_context}
+
+Current topic:
+{topic}
+"""
+
+        result = create_plan(enhanced_topic)
 
         plan = result["text"]
         source = result["source"]
@@ -109,13 +128,21 @@ def run_research(topic):
 
         # ❗ HANDLE FAILURE
         if not plan or "⚠️" in plan:
-            return "⚠️ Failed to generate research plan."
+            return {
+                "research": [],
+                "memory": memory_context,
+                "error": "⚠️ Failed to generate research plan."
+            }
 
         # clean tasks
         tasks = [t.strip() for t in plan.split("\n") if t.strip()]
 
         if not tasks:
-            return "⚠️ No valid research tasks generated."
+            return {
+                "research": [],
+                "memory": memory_context,
+                "error": "⚠️ No valid research tasks generated."
+            }
 
         all_research = []
 
@@ -130,10 +157,25 @@ def run_research(topic):
 
         # ❗ HANDLE EMPTY OUTPUT
         if not all_research:
-            return "⚠️ No useful research data found."
+            return {
+                "research": [],
+                "memory": memory_context,
+                "error": "⚠️ No useful research data found."
+            }
 
-        return all_research
+        # -----------------------------
+        # FINAL OUTPUT
+        # -----------------------------
+        return {
+            "research": all_research,
+            "memory": memory_context,
+            "error": None
+        }
 
     except Exception as e:
         print("🔥 Research Engine Error:", e)
-        return "⚠️ Research process failed."
+        return {
+            "research": [],
+            "memory": "",
+            "error": "⚠️ Research process failed."
+        }

@@ -28,20 +28,26 @@ def home():
 
         try:
             # -----------------------------
-            # RUN RESEARCH SAFELY
+            # RUN RESEARCH
             # -----------------------------
-            research_data = run_research(topic)
+            result = run_research(topic)
 
-            if "⚠️" in research_data:
-                return f"<h3>{research_data}</h3>"
+            research_data = result["research"]
+            memory_context = result["memory"]
+            error = result["error"]
+
+            # Handle research error
+            if error:
+                return f"<h3>{error}</h3>"
 
             # -----------------------------
-            # GENERATE REPORT SAFELY
+            # GENERATE REPORT
             # -----------------------------
-            report = generate_report(topic, research_data)
+            report = generate_report(research_data, memory_context, topic)
 
-            if "⚠️" in report:
-                return f"<h3>{report}</h3>"
+            # Handle report error
+            if not report or "⚠️" in report:
+                return "<h3>⚠️ Failed to generate report.</h3>"
 
             # -----------------------------
             # SAVE REPORT
