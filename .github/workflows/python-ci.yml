@@ -3,16 +3,20 @@ name: Python CI
 
 on:
   push:
-    branches: [main, feature/mlops-experiment-2]
+    branches:
+      - main
+      - feature/mlops-experiment-2
+      - feature/mlops-experiment-3
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -20,8 +24,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install pytest
-        run: python -m pip install pytest
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
 
-      - name: Run tests
+      - name: Run Tests
         run: python -m pytest -v test_ci.py
